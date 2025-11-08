@@ -19,12 +19,7 @@ const database = getDatabase(app);
 // Referensi ke node 'messages' di database
 const messagesRef = ref(database, 'messages');
 
-const messageInput = document.getElementById('messageInput');
-const sendBtn = document.getElementById('sendBtn');
-const messagesDiv = document.getElementById('messages');
-const usernameInput = document.getElementById('usernameInput');
-const imageInput = document.getElementById('imageInput');
-const uploadImageBtn = document.getElementById('uploadImageBtn');
+let messageInput, sendBtn, messagesDiv, usernameInput, imageInput, uploadImageBtn;
 
 // Fungsi untuk mengirim pesan teks
 function sendMessage() {
@@ -36,7 +31,9 @@ function sendMessage() {
       sender: getUsername(),
       timestamp: Date.now()
     };
-    push(messagesRef, newMessage);
+    push(messagesRef, newMessage)
+      .then(() => console.log("Pesan berhasil dikirim"))
+      .catch(e => console.error("Error mengirim pesan:", e));
     messageInput.value = '';
   }
 }
@@ -54,7 +51,9 @@ function sendImage() {
       sender: getUsername(),
       timestamp: Date.now()
     };
-    push(messagesRef, newMessage);
+    push(messagesRef, newMessage)
+      .then(() => console.log("Gambar berhasil dikirim"))
+      .catch(e => console.error("Error mengirim gambar:", e));
   };
   reader.readAsDataURL(file);
 }
@@ -69,6 +68,8 @@ onValue(messagesRef, (snapshot) => {
     });
   }
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}, {
+  onlyOnce: false
 });
 
 // Fungsi untuk menambahkan pesan ke DOM
@@ -93,11 +94,21 @@ function getUsername() {
   return usernameInput.value.trim() || 'Anonim';
 }
 
-// Event listener
-sendBtn.addEventListener('click', sendMessage);
-uploadImageBtn.addEventListener('click', () => imageInput.click());
-imageInput.addEventListener('change', sendImage);
+// Tunggu DOM selesai dimuat sebelum mengakses elemen
+document.addEventListener('DOMContentLoaded', () => {
+  messageInput = document.getElementById('messageInput');
+  sendBtn = document.getElementById('sendBtn');
+  messagesDiv = document.getElementById('messages');
+  usernameInput = document.getElementById('usernameInput');
+  imageInput = document.getElementById('imageInput');
+  uploadImageBtn = document.getElementById('uploadImageBtn');
 
-messageInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') sendMessage();
+  // Event listener
+  sendBtn.addEventListener('click', sendMessage);
+  uploadImageBtn.addEventListener('click', () => imageInput.click());
+  imageInput.addEventListener('change', sendImage);
+
+  messageInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+  });
 });
