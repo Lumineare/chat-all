@@ -1,7 +1,8 @@
+// Import Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
 import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
-// Konfigurasi Firebase kamu
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAuTnzeqL4MewumZLrsaKe3Mo4osmwnsoA",
   authDomain: "chat-89990.firebaseapp.com",
@@ -12,19 +13,19 @@ const firebaseConfig = {
   measurementId: "G-81BR3WPV20"
 };
 
-// Inisialisasi Firebase
+// Initialize Firebase app and database
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
-
-// Referensi ke node 'messages' di database
 const messagesRef = ref(database, 'messages');
 
 let messageInput, sendBtn, messagesDiv, usernameInput, imageInput, uploadImageBtn;
 
-// Fungsi untuk mengirim pesan teks
+// Function to send text message
 function sendMessage() {
+  console.log("Fungsi sendMessage dipanggil");
   const text = messageInput.value.trim();
   if (text) {
+    console.log("Mengirim pesan:", text);
     const newMessage = {
       content: text,
       type: 'text',
@@ -35,14 +36,21 @@ function sendMessage() {
       .then(() => console.log("Pesan berhasil dikirim"))
       .catch(e => console.error("Error mengirim pesan:", e));
     messageInput.value = '';
+  } else {
+    console.log("Input kosong, tidak mengirim.");
   }
 }
 
-// Fungsi untuk mengirim foto
+// Function to send image
 function sendImage() {
+  console.log("Fungsi sendImage dipanggil");
   const file = imageInput.files[0];
-  if (!file) return;
+  if (!file) {
+    console.log("Tidak ada file yang dipilih");
+    return;
+  }
 
+  console.log("Mengirim gambar:", file.name);
   const reader = new FileReader();
   reader.onload = function(e) {
     const newMessage = {
@@ -58,8 +66,9 @@ function sendImage() {
   reader.readAsDataURL(file);
 }
 
-// Fungsi untuk menampilkan pesan dari Firebase
+// Function to display messages from Firebase
 onValue(messagesRef, (snapshot) => {
+  console.log("Menerima data dari Firebase:", snapshot.val());
   messagesDiv.innerHTML = '';
   const data = snapshot.val();
   if (data) {
@@ -72,7 +81,7 @@ onValue(messagesRef, (snapshot) => {
   onlyOnce: false
 });
 
-// Fungsi untuk menambahkan pesan ke DOM
+// Function to add message to DOM
 function addMessageToDOM(msg) {
   const msgDiv = document.createElement('div');
   msgDiv.classList.add('message');
@@ -89,13 +98,15 @@ function addMessageToDOM(msg) {
   messagesDiv.appendChild(msgDiv);
 }
 
-// Fungsi untuk mendapatkan nama pengguna saat ini
+// Function to get current username
 function getUsername() {
   return usernameInput.value.trim() || 'Anonim';
 }
 
-// Tunggu DOM selesai dimuat sebelum mengakses elemen
+// Wait for DOM to load before accessing elements
 document.addEventListener('DOMContentLoaded', () => {
+  console.log("DOM selesai dimuat");
+
   messageInput = document.getElementById('messageInput');
   sendBtn = document.getElementById('sendBtn');
   messagesDiv = document.getElementById('messages');
@@ -103,12 +114,27 @@ document.addEventListener('DOMContentLoaded', () => {
   imageInput = document.getElementById('imageInput');
   uploadImageBtn = document.getElementById('uploadImageBtn');
 
-  // Event listener
+  if (!messageInput || !sendBtn || !messagesDiv || !usernameInput || !imageInput || !uploadImageBtn) {
+    console.error("Salah satu elemen DOM tidak ditemukan!");
+    return;
+  }
+
+  console.log("Semua elemen DOM ditemukan");
+
+  // Attach event listeners
   sendBtn.addEventListener('click', sendMessage);
-  uploadImageBtn.addEventListener('click', () => imageInput.click());
+  uploadImageBtn.addEventListener('click', () => {
+    console.log("Tombol upload gambar diklik");
+    imageInput.click();
+  });
   imageInput.addEventListener('change', sendImage);
 
   messageInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage();
+    if (e.key === 'Enter') {
+      console.log("Tombol Enter ditekan");
+      sendMessage();
+    }
   });
+
+  console.log("Event listener berhasil dipasang");
 });
